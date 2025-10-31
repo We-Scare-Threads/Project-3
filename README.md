@@ -14,7 +14,7 @@ __Only Scheduling Type Specified (1 core default):__
 $ java main -(S/s) <1-4>
 ```
 
-__Scheduling Type First with Core Specification:__
+__Scheduling Type First then Core Specification:__
 ```
 $ java main -(S/s) <1-4> -(C/c) <1-4>
 ```
