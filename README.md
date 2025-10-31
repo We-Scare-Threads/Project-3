@@ -3,7 +3,7 @@
 ## Compilation and Execution Commands
 - Here is the command to use to compile all files (Weka and java files):
 ```
-$ javac -cp "lib\weka.jar" src\main.java src\FCFS.java src\RR.java src\NPSJ.java src\PSJ.java src\ML.java
+$ javac -cp "lib/weka.jar" src/main.java src/FCFS.java src/RR.java src/NPSJ.java src/PSJ.java src/ML.java
 ```
 
 ### Here is the command structure to execute Tasks 1 & 2 (There are 3 optional forms):__
