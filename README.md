@@ -8,13 +8,16 @@ $ javac -cp "lib\weka.jar" src\main.java src\FCFS.java src\RR.java src\NPSJ.java
 
 - Here is the command structure to execute Tasks 1 & 2 (There are 3 optional forms):
     - Only Scheduling Type Specified (1 core default):
+
 ```
 $ java main -(S/s) <1-4>
 ```
+
     - Scheduling Type First with Core Specification:
 ```
 $ java main -(S/s) <1-4> -(C/c) <1-4>
 ```
+
 
     - Core Specification First then Scheduling Types:
 ```
