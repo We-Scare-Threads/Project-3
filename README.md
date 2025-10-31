@@ -25,7 +25,7 @@ __Core Specification First then Scheduling Types:__
 $ java main -(C/c) <1-4> - (S/s) <1-4>
 ```
 
-### Here is the command structure to execute Tasks 3:
+### Here is the command to execute Task 3:
 ```
 $ java --add-opens java.base/java.lang=ALL-UNNAMED -cp "src;lib/weka.jar" ML
 ```
