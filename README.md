@@ -13,13 +13,13 @@ $ javac -cp "lib\weka.jar" src\main.java src\FCFS.java src\RR.java src\NPSJ.java
 $ java main -(S/s) <1-4>
 ```
 
-    - Scheduling Type First with Core Specification:
+- Scheduling Type First with Core Specification:
 ```
 $ java main -(S/s) <1-4> -(C/c) <1-4>
 ```
 
 
-    - Core Specification First then Scheduling Types:
+- Core Specification First then Scheduling Types:
 ```
 $ java main -(C/c) <1-4> - (S/s) <1-4>
 ```
