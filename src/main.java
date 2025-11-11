@@ -13,6 +13,7 @@ public class main {
         String option2;
         String option3;
         String option4;
+        String option5;
         switch (option1) {
             case "-s":
             case "-S":
@@ -21,10 +22,38 @@ public class main {
                     return;
                 }
                 option2 = args[1];
-                if (args.length == 4){
+                if (args.length == 4 || args.length == 5) {
                     option3 = args[2];
                     option4 = args[3];
-                    if(option3.equals("-C") || option3.equals("-c")) {
+                    
+                    // Check if this is RR with time quantum: -s 2 <timeQuantum> -c <cores>
+                    if (args.length == 5 && option2.equals("2")) {
+                        try {
+                            int timeQuantum = Integer.parseInt(option3);
+                            // option4 should be "-c", args[4] should be cores
+                            if (option4.equals("-C") || option4.equals("-c")) {
+                                option5 = args[4];
+                                int cores = Integer.parseInt(option5);
+                                if (cores >= 1 && cores <= 4) {
+                                    RR.main(new String[]{option5, String.valueOf(timeQuantum)});
+                                    return;
+                                } else {
+                                    System.out.println("Invalid number of cores: " + option5);
+                                    System.out.println("Please provide a number between 1 and 4.");
+                                    return;
+                                }
+                            } else {
+                                System.out.println("Expected -C or -c for core count, got: " + option4);
+                                return;
+                            }
+                        } catch (NumberFormatException e) {
+                            System.out.println("Invalid time quantum: " + option3);
+                            System.out.println("Please provide a valid integer for time quantum.");
+                            return;
+                        }
+                    }
+                    // Regular case: -s <task> -c <cores>
+                    else if(option3.equals("-C") || option3.equals("-c")) {
                         int num = Integer.parseInt(option4);
                         if (num >=1 && num <=4) {
                             switch (option2) {
@@ -32,7 +61,7 @@ public class main {
                                     FCFS.main(new String[]{option4});
                                     return;
                                 case "2":
-                                    RR.main(new String[]{option4});
+                                    RR.main(new String[]{option4, "5"}); // cores, default timeQuantum=5
                                     return;
                                 case "3":
                                     NPSJ.main(new String[]{option4});
@@ -42,7 +71,8 @@ public class main {
                                     return;
                                 default:
                                     System.out.println("Unknown option2: " + option2);
-                                    System.out.println("Available tasks: -S1 (FCFS), -S2 (RR), -S3 (NPSJ), -S4 (PSJ)");
+                                    System.out.println("Available tasks: -S1 (FCFS), -S2 (RR) [timeQuantum], -S3 (NPSJ), -S4 (PSJ)");
+                                    System.out.println("RR usage: -s 2 <timeQuantum> -c <cores>");
                                     return;
                             }
                         } else {
@@ -53,6 +83,7 @@ public class main {
                     } else {
                         System.out.println("Unknown option3: " + option3);
                         System.out.println("Expected -C or -c for core count.");
+                        return;
                     }
                 } else if (args.length == 2){
                     switch (option2) {
@@ -61,8 +92,8 @@ public class main {
                             FCFS.main(new String[]{"1"});
                             break;
                         case "2":
-                            System.out.println("Executing RR with default 1 core.\n");
-                            RR.main(new String[]{"1"});
+                            System.out.println("Executing RR with default 1 core and default time quantum 1.\n");
+                            RR.main(new String[]{"1", "5"}); // cores, timeQuantum
                             break;
                         case "3":
                             System.out.println("Executing NPSJ with default 1 core.\n");
@@ -79,24 +110,38 @@ public class main {
                     break;
                 } else {
                     System.out.println("Invalid number of arguments for -S option.");
-                    System.out.println("Usage: -S (1-4) or -S (1-4) -C (1-4)");
+                    System.out.println("Usage: -S (1-4) or -S (1-4) -C (1-4) or -S 2 <timeQuantum> -C <cores>");
                     return;
                 }
             case "-C":
             case "-c":
             if (args.length < 2) {
-                    System.out.println("Please provide a number (1-4) for the number of cores followed by scheduling option. (e.g., -C 2 -S 1)");
+                    System.out.println("Please provide a number (1-4) for the number of cores followed by scheduling option. (e.g., -C 2 -S 1 or -C 2 -S 2 <timeQuantum>)");
                     return;
                 }
                 option2 = args[1];
                 int num = Integer.parseInt(option2);
                 if (num >=1 && num <=4) {
                 if (args.length < 4) {
-                    System.out.println("Please provide scheduling option after number of cores. (e.g., -C 2 -S 1)");
+                    System.out.println("Please provide scheduling option after number of cores. (e.g., -C 2 -S 1 or -C 2 -S 2 <timeQuantum>)");
                     return;
                 }
                 option3 = args[2];
                 option4 = args[3];
+                
+                // Handle RR with time quantum: -c <cores> -s 2 <timeQuantum>
+                if (args.length == 5 && option4.equals("2") && (option3.equals("-S") || option3.equals("-s"))) {
+                    try {
+                        option5 = args[4];
+                        int timeQuantum = Integer.parseInt(option5);
+                        RR.main(new String[]{option2, String.valueOf(timeQuantum)});
+                        return;
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid time quantum: " + args[4]);
+                        System.out.println("Please provide a valid integer for time quantum.");
+                        return;
+                    }
+                }
                 } else {
                     System.out.println("Invalid number of cores: " + option2);
                     System.out.println("Please provide a number between 1 and 4.");
@@ -108,7 +153,7 @@ public class main {
                             FCFS.main(new String[]{option2});
                             break;
                         case "2":
-                            RR.main(new String[]{option2});
+                            RR.main(new String[]{option2, "5"}); // cores, default timeQuantum=5
                             break;
                         case "3":
                             NPSJ.main(new String[]{option2});
