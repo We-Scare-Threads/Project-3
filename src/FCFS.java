@@ -2,21 +2,27 @@
 
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Random;
 
 public class FCFS extends Scheduler {
+    public int ID;
     private int cores;
-    private Queue<Process> processQueue;
+    public static Queue<Process> processQueue;
     private int totalBurstTime;
 
-    public FCFS(int cores) {
+    public FCFS(int cores, int ID) {
         this.cores = cores;
         this.processQueue = new LinkedList<>();
         this.totalBurstTime = 0;
+        this.ID = ID;
+
+        print();
+
     }
-    public static void main(String[] args) {
-        System.out.println("FCFS Scheduling Algorithm Executed.");
-        System.out.println("Number of cores: " + args[0]);
+    public void print() {
+        System.out.println("Hi, I am FCFS thread #"+ID);
     }
+
 
     @Override
     boolean isPreemptive() {
