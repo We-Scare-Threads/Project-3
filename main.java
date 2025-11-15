@@ -37,7 +37,7 @@ public class main {
                                 option5 = args[4];
                                 int cores = Integer.parseInt(option5);
                                 if (cores >= 1 && cores <= 4) {
-                                    RR.main(new String[]{option5, String.valueOf(timeQuantum)});
+                                    RR rrScheduler = new RR(cores, timeQuantum);
                                     return;
                                 } else {
                                     System.out.println("Invalid number of cores: " + option5);
@@ -61,16 +61,15 @@ public class main {
                             switch (option2) {
                                 case "1":
                                     FCFS fcfsScheduler = new FCFS(Integer.parseInt(option4), 1);
-                                    fcfsScheduler.main(new String[]{});
                                     return;
                                 case "2":
-                                    RR.main(new String[]{option4, "5"}); // cores, default timeQuantum=5
+                                    RR rrScheduler = new RR(Integer.parseInt(option4), 5); // cores, default timeQuantum=5
                                     return;
                                 case "3":
-                                    NPSJ.main(new String[]{option4});
+                                    NPSJ npsjScheduler = new NPSJ(Integer.parseInt(option4));
                                     return;
                                 case "4":
-                                    PSJ.main(new String[]{option4});
+                                    PSJ psjScheduler = new PSJ(Integer.parseInt(option4));
                                     return;
                                 default:
                                     System.out.println("Unknown option2: " + option2);

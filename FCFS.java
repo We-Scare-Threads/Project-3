@@ -66,14 +66,11 @@ public class FCFS extends Scheduler {
                         if (process != null) {
                             SynchronizedPrinter.printWithCategory("CORE-" + coreId, "Starting Process " + 
                                 process.getProcessId() + " (Burst: " + process.getBurstTime() + ")");
-                            SynchronizedPrinter.printBlankLine();
                             
                             process.run();
                             
-                            SynchronizedPrinter.printBlankLine();
                             SynchronizedPrinter.printWithCategory("CORE-" + coreId, "Completed Process " + 
                                 process.getProcessId());
-                            SynchronizedPrinter.printBlankLine();
                             
                             completedProcesses.incrementAndGet();
                         }
@@ -97,7 +94,6 @@ public class FCFS extends Scheduler {
             }
         }
         
-        SynchronizedPrinter.printBlankLine();
         SynchronizedPrinter.printSeparator();
         SynchronizedPrinter.printWithCategory("SCHEDULER", "FCFS Complete!");
         SynchronizedPrinter.printWithCategory("SCHEDULER", "Total processes: " + totalProcessCount);
