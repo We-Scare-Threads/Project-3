@@ -21,6 +21,10 @@ public class RR extends Scheduler {
     }
 
     @Override
+    public void addProcess(Queue<Process> processList, Process p){
+    }
+
+    @Override
     boolean isPreemptive() {
         return true;
     }
@@ -28,11 +32,6 @@ public class RR extends Scheduler {
     @Override
     void schedule() {
         // Implementation of RR scheduling algorithm
-    }
-
-    @Override
-    void addProcess(Process p) {
-        // Add process to the scheduler
     }
 
     @Override
@@ -44,12 +43,6 @@ public class RR extends Scheduler {
     @Override
     int getCores() {
         return cores;
-    }
-
-    @Override
-    int getProcesses() {
-        // Return the number of processes
-        return 0;
     }
 
     @Override

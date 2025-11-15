@@ -2,27 +2,25 @@
 
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.Random;
 
-public class FCFS extends Scheduler {
-    public int ID;
+public class NPSJ extends Scheduler {
     private int cores;
-    public static Queue<Process> processQueue;
+    private Queue<Process> processQueue;
     private int totalBurstTime;
 
-    public FCFS(int cores, int ID) {
+    public NPSJ(int cores) {
         this.cores = cores;
         this.processQueue = new LinkedList<>();
         this.totalBurstTime = 0;
-        this.ID = ID;
-
-        print();
-
     }
-    public void print() {
-        System.out.println("Hi, I am FCFS thread #"+ID);
+    public static void main(String[] args) {
+        System.out.println("NPSJ Scheduling Algorithm Executed.");
+        System.out.println("Number of cores: " + args[0]);
     }
 
+    @Override
+    public void addProcess(Queue<Process> processList, Process p){
+    }
 
     @Override
     boolean isPreemptive() {
@@ -31,12 +29,7 @@ public class FCFS extends Scheduler {
 
     @Override
     void schedule() {
-        // Implementation of FCFS scheduling algorithm
-    }
-
-    @Override
-    void addProcess(Process p) {
-        // Add process to the scheduler
+        // Implementation of NPSJ scheduling algorithm
     }
 
     @Override
@@ -48,12 +41,6 @@ public class FCFS extends Scheduler {
     @Override
     int getCores() {
         return cores;
-    }
-
-    @Override
-    int getProcesses() {
-        // Return the number of processes
-        return 0;
     }
 
     @Override

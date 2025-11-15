@@ -3,34 +3,34 @@
 import java.util.LinkedList;
 import java.util.Queue;
 
-public class NPSJ extends Scheduler {
+public class PSJ extends Scheduler {
     private int cores;
     private Queue<Process> processQueue;
     private int totalBurstTime;
 
-    public NPSJ(int cores) {
+    public PSJ(int cores) {
         this.cores = cores;
         this.processQueue = new LinkedList<>();
         this.totalBurstTime = 0;
     }
+
     public static void main(String[] args) {
-        System.out.println("NPSJ Scheduling Algorithm Executed.");
+        System.out.println("PSJ Scheduling Algorithm Executed.");
         System.out.println("Number of cores: " + args[0]);
     }
 
     @Override
+    public void addProcess(Queue<Process> processList, Process p){
+    }
+
+    @Override
     boolean isPreemptive() {
-        return false;
+        return true;
     }
 
     @Override
     void schedule() {
-        // Implementation of NPSJ scheduling algorithm
-    }
-
-    @Override
-    void addProcess(Process p) {
-        // Add process to the scheduler
+        // Implementation of PSJ scheduling algorithm
     }
 
     @Override
@@ -42,12 +42,6 @@ public class NPSJ extends Scheduler {
     @Override
     int getCores() {
         return cores;
-    }
-
-    @Override
-    int getProcesses() {
-        // Return the number of processes
-        return 0;
     }
 
     @Override

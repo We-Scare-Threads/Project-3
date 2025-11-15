@@ -60,24 +60,8 @@ public class main {
                         if (num >=1 && num <=4) {
                             switch (option2) {
                                 case "1":
-                                    System.out.println("Scheduler Algorithm Selected: FCFS");
-                                    Random r = new Random();
-                                    int T = r.nextInt(25)+1;
-                                    int B = 0;
-                                    System.out.println("Number of threads: " + T);
-
-                                    for(int i=0; i<T; i++){
-                                        System.out.println("Main Thread     |   Creating Process Thread "+i);
-                                    }
-
-                                    System.out.println("\n--------------- Ready Queue ---------------");
-                                    for(int i=0; i<T; i++){
-                                        B = r.nextInt(50)+1;
-                                        System.out.println("ID: "+i+", Max Burst: "+B+" Current Burst: 0");
-                                        FCFS fcfs = new FCFS(1,i);
-                                    }
-                                    System.out.println("-------------------------------------------");
-                                    //changes end by Caleb Schexnider
+                                    FCFS fcfsScheduler = new FCFS(Integer.parseInt(option4), 1);
+                                    fcfsScheduler.main(new String[]{});
                                     return;
                                 case "2":
                                     RR.main(new String[]{option4, "5"}); // cores, default timeQuantum=5
@@ -107,25 +91,7 @@ public class main {
                 } else if (args.length == 2){
                     switch (option2) {
                         case "1":
-                            //changes start by Caleb Schexnider
-                            System.out.println("Scheduler Algorithm Selected: FCFS");
-                            Random r = new Random();
-                            int T = r.nextInt(25)+1;
-                            int B = 0;
-                            System.out.println("Number of threads: " + T);
-
-                            for(int i=0; i<T; i++){
-                                System.out.println("Main Thread     |   Creating Process Thread "+i);
-                            }
-
-                            System.out.println("\n--------------- Ready Queue ---------------");
-                            for(int i=0; i<T; i++){
-                                B = r.nextInt(50)+1;
-                                System.out.println("ID: "+i+", Max Burst: "+B+" Current Burst: 0");
-                                FCFS fcfs = new FCFS(1,i);
-                            }
-                            System.out.println("-------------------------------------------");
-                            //changes end by Caleb Schexnider
+                            FCFS.main(new String[]{"1"});
                             break;
                         case "2":
                             System.out.println("Executing RR with default 1 core and default time quantum 1.\n");
@@ -186,25 +152,7 @@ public class main {
                 if(option3.equals("-S") || option3.equals("-s")) {
                     switch (option4) {
                         case "1":
-
-                            System.out.println("Scheduler Algorithm Selected: FCFS");
-                            Random r = new Random();
-                            int T = r.nextInt(25)+1;
-                            int B = 0;
-                            System.out.println("Number of threads: " + T);
-
-                            for(int i=0; i<T; i++){
-                                System.out.println("Main Thread     |   Creating Process Thread "+i);
-                            }
-
-                            System.out.println("\n--------------- Ready Queue ---------------");
-                            for(int i=0; i<T; i++){
-                                B = r.nextInt(50)+1;
-                                System.out.println("ID: "+i+", Max Burst: "+B+" Current Burst: 0");
-                                FCFS fcfs = new FCFS(1,i);
-                            }
-                            System.out.println("-------------------------------------------");
-                            //changes end by Caleb Schexnider
+                            FCFS.main(new String[]{option2});
                             break;
                         case "2":
                             RR.main(new String[]{option2, "5"}); // cores, default timeQuantum=5
