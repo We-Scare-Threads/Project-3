@@ -86,15 +86,30 @@ public class PSJ extends Scheduler {
                                     process.getProcessId());
                                 completedProcesses.incrementAndGet();
                             } else {
-                                SynchronizedPrinter.printWithCategory("CORE-" + coreId, "Process " + 
-                                    process.getProcessId() + " preempted (Remaining: " + process.getRemainingTime() + ")");
-                                
-                                // Re-sort and add back to queue based on remaining time
+                                // Check if there are shorter jobs available before putting this back
                                 java.util.List<Process> tempList = new java.util.ArrayList<>();
                                 psjtQueue.drainTo(tempList);
-                                tempList.add(process);
-                                tempList.sort(java.util.Comparator.comparingInt(Process::getRemainingTime));
-                                psjtQueue.addAll(tempList);
+                                
+                                // Only preempt if there's a shorter job available
+                                boolean shouldPreempt = tempList.stream()
+                                    .anyMatch(p -> p.getRemainingTime() < process.getRemainingTime());
+                                
+                                if (shouldPreempt) {
+                                    SynchronizedPrinter.printWithCategory("CORE-" + coreId, "Process " + 
+                                        process.getProcessId() + " preempted (Remaining: " + process.getRemainingTime() + ")");
+                                    
+                                    // Add current process back to list and sort by remaining time
+                                    tempList.add(process);
+                                    tempList.sort(java.util.Comparator.comparingInt(Process::getRemainingTime));
+                                    psjtQueue.addAll(tempList);
+                                    
+                                    // Small delay to allow other cores to pick up shorter jobs
+                                    Thread.sleep(10);
+                                } else {
+                                    // No shorter job available, continue with current process
+                                    psjtQueue.addAll(tempList);
+                                    psjtQueue.offer(process); // Put back at end to continue next iteration
+                                }
                             }
                         }
                     } catch (InterruptedException e) {
