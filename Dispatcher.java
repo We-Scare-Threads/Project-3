@@ -52,7 +52,7 @@ public class Dispatcher {
                 
                 // Simulate context switch overhead
                 try {
-                    Thread.sleep(contextSwitchTime * 10);
+                    Thread.sleep(contextSwitchTime * 5);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }

@@ -48,6 +48,8 @@ public class RR extends Scheduler {
         java.util.List<Thread> coreThreads = new java.util.ArrayList<>();
         java.util.concurrent.BlockingQueue<Process> rrQueue = new java.util.concurrent.LinkedBlockingQueue<>(processQueue);
         java.util.concurrent.atomic.AtomicInteger completedProcesses = new java.util.concurrent.atomic.AtomicInteger(0);
+        java.util.concurrent.atomic.AtomicInteger currentTime = new java.util.concurrent.atomic.AtomicInteger(0);
+        java.util.List<Process> completedList = java.util.Collections.synchronizedList(new java.util.ArrayList<>());
         int totalProcessCount = processQueue.size();
         
         // Start threads for each core
@@ -55,10 +57,13 @@ public class RR extends Scheduler {
             final int coreId = i;
             
             Thread coreThread = new Thread(() -> {
+                int coreTime = 0;
                 while (completedProcesses.get() < totalProcessCount) {
                     try {
                         Process process = rrQueue.poll(100, java.util.concurrent.TimeUnit.MILLISECONDS);
                         if (process != null && process.getRemainingTime() > 0) {
+                            coreTime = Math.max(coreTime, process.getArrivalTime());
+                            
                             SynchronizedPrinter.printWithCategory("CORE-" + coreId, "Starting Process " + 
                                 process.getProcessId() + " (Remaining: " + process.getRemainingTime() + ", Quantum: " + timeQuantum + ")");
                             
@@ -69,12 +74,15 @@ public class RR extends Scheduler {
                             try {
                                 Thread.sleep(executeTime * 50);
                                 process.setRemainingTime(process.getRemainingTime() - executeTime);
+                                coreTime += executeTime;
                             } catch (InterruptedException e) {
                                 Thread.currentThread().interrupt();
                                 break;
                             }
                             
                             if (process.getRemainingTime() <= 0) {
+                                process.setCompletionTime(coreTime);
+                                completedList.add(process);
                                 SynchronizedPrinter.printWithCategory("CORE-" + coreId, "Completed Process " + 
                                     process.getProcessId());
                                 completedProcesses.incrementAndGet();
@@ -104,11 +112,19 @@ public class RR extends Scheduler {
             }
         }
         
+        // Calculate average wait time
+        double totalWaitTime = 0;
+        for (Process p : completedList) {
+            totalWaitTime += p.getWaitTime();
+        }
+        double avgWaitTime = completedList.isEmpty() ? 0 : totalWaitTime / completedList.size();
+        
         SynchronizedPrinter.printSeparator();
         SynchronizedPrinter.printWithCategory("SCHEDULER", "Round Robin Complete!");
         SynchronizedPrinter.printWithCategory("SCHEDULER", "Total processes: " + totalProcessCount);
         SynchronizedPrinter.printWithCategory("SCHEDULER", "Total burst time: " + totalBurstTime);
         SynchronizedPrinter.printWithCategory("SCHEDULER", "Time quantum: " + timeQuantum);
+        SynchronizedPrinter.printWithCategory("SCHEDULER", String.format("Average wait time: %.2f time units", avgWaitTime));
         SynchronizedPrinter.printSeparator();
     }
 

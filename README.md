@@ -55,5 +55,5 @@ $ java main -c 3 -s 2 10   # 3 cores, RR with time quantum 10
 
 ### Here is the command to execute Task 3:
 ```
-$ java --add-opens java.base/java.lang=ALL-UNNAMED -cp "src;lib/weka.jar" ML
+$ java --add-opens java.base/java.lang=ALL-UNNAMED -cp ".;lib/weka.jar" ML
 ```

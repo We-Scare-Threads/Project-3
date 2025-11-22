@@ -23,17 +23,9 @@ public class PSJ extends Scheduler {
 
     @Override
     public void addProcess(Queue<Process> processList, Process p){
-        // Add process to internal queue and track total burst time
+        // Add process maintaining arrival time order (preemption handled in schedule())
         processQueue.offer(p);
         totalBurstTime += p.getBurstTime();
-        
-        // Convert to list, sort by remaining time (shortest remaining time first)
-        java.util.List<Process> sortedProcesses = new java.util.ArrayList<>(processQueue);
-        sortedProcesses.sort(java.util.Comparator.comparingInt(Process::getRemainingTime));
-        
-        // Clear and refill queue with sorted processes
-        processQueue.clear();
-        processQueue.addAll(sortedProcesses);
     }
 
     @Override
@@ -52,64 +44,110 @@ public class PSJ extends Scheduler {
             return;
         }
         
-        // PSJ: processes sorted by remaining time, shortest remaining time first
+        // Convert to list for easier manipulation
+        java.util.List<Process> allProcesses = new java.util.ArrayList<>(processQueue);
+        java.util.Set<Process> completed = java.util.Collections.synchronizedSet(new java.util.HashSet<>());
+        java.util.List<Process> completedList = java.util.Collections.synchronizedList(new java.util.ArrayList<>());
         java.util.List<Thread> coreThreads = new java.util.ArrayList<>();
-        java.util.concurrent.BlockingQueue<Process> psjtQueue = new java.util.concurrent.LinkedBlockingQueue<>(processQueue);
-        java.util.concurrent.atomic.AtomicInteger completedProcesses = new java.util.concurrent.atomic.AtomicInteger(0);
-        int totalProcessCount = processQueue.size();
+        java.util.concurrent.atomic.AtomicInteger currentTime = new java.util.concurrent.atomic.AtomicInteger(0);
+        int totalProcessCount = allProcesses.size();
+        
+        // Shared ready queue with synchronization
+        java.util.concurrent.BlockingQueue<Process> sharedReadyQueue = new java.util.concurrent.LinkedBlockingQueue<>();
+        Object lock = new Object();
+        
+        // Start with minimum arrival time
+        int minArrival = allProcesses.stream().mapToInt(Process::getArrivalTime).min().orElse(1);
+        currentTime.set(minArrival);
+        
+        // Add initially available processes
+        synchronized(lock) {
+            java.util.List<Process> initialReady = new java.util.ArrayList<>();
+            for (Process p : allProcesses) {
+                if (p.getArrivalTime() <= currentTime.get()) {
+                    initialReady.add(p);
+                }
+            }
+            initialReady.sort(java.util.Comparator.comparingInt(Process::getRemainingTime));
+            sharedReadyQueue.addAll(initialReady);
+        }
         
         // Start threads for each core
         for (int i = 0; i < cores; i++) {
             final int coreId = i;
             
             Thread coreThread = new Thread(() -> {
-                while (completedProcesses.get() < totalProcessCount) {
+                Process currentProcess = null;
+                int coreTime = minArrival;
+                
+                while (completed.size() < totalProcessCount) {
                     try {
-                        Process process = psjtQueue.poll(100, java.util.concurrent.TimeUnit.MILLISECONDS);
-                        if (process != null && process.getRemainingTime() > 0) {
-                            SynchronizedPrinter.printWithCategory("CORE-" + coreId, "Starting Process " + 
-                                process.getProcessId() + " (Remaining: " + process.getRemainingTime() + " - Shortest Remaining)");
-                            
-                            // Execute for a small time slice to allow preemption
-                            int timeSlice = Math.min(5, process.getRemainingTime()); // Small slice for preemption
-                            
-                            try {
-                                Thread.sleep(timeSlice * 50);
-                                process.setRemainingTime(process.getRemainingTime() - timeSlice);
-                            } catch (InterruptedException e) {
-                                Thread.currentThread().interrupt();
-                                break;
+                        // Get next process if we don't have one
+                        if (currentProcess == null || currentProcess.getRemainingTime() <= 0) {
+                            if (currentProcess != null && currentProcess.getRemainingTime() <= 0) {
+                                currentProcess.setCompletionTime(coreTime);
+                                completedList.add(currentProcess);
+                                SynchronizedPrinter.printWithCategory("CORE-" + coreId, "Completed Process " + 
+                                    currentProcess.getProcessId());
+                                completed.add(currentProcess);
                             }
                             
-                            if (process.getRemainingTime() <= 0) {
-                                SynchronizedPrinter.printWithCategory("CORE-" + coreId, "Completed Process " + 
-                                    process.getProcessId());
-                                completedProcesses.incrementAndGet();
-                            } else {
-                                // Check if there are shorter jobs available before putting this back
-                                java.util.List<Process> tempList = new java.util.ArrayList<>();
-                                psjtQueue.drainTo(tempList);
+                            currentProcess = sharedReadyQueue.poll(100, java.util.concurrent.TimeUnit.MILLISECONDS);
+                            if (currentProcess != null && currentProcess.getRemainingTime() > 0) {
+                                SynchronizedPrinter.printWithCategory("CORE-" + coreId, "Starting Process " + 
+                                    currentProcess.getProcessId() + " (Arrival: " + currentProcess.getArrivalTime() + 
+                                    ", Remaining: " + currentProcess.getRemainingTime() + " - Shortest Remaining)");
+                            }
+                        }
+                        
+                        if (currentProcess != null && currentProcess.getRemainingTime() > 0) {
+                            // Execute for 1 time unit
+                            Thread.sleep(50); // 1 time unit = 50ms simulation
+                            currentProcess.setRemainingTime(currentProcess.getRemainingTime() - 1);
+                            coreTime++;
+                            
+                            synchronized(lock) {
+                                currentTime.set(coreTime);
                                 
-                                // Only preempt if there's a shorter job available
-                                boolean shouldPreempt = tempList.stream()
-                                    .anyMatch(p -> p.getRemainingTime() < process.getRemainingTime());
-                                
-                                if (shouldPreempt) {
-                                    SynchronizedPrinter.printWithCategory("CORE-" + coreId, "Process " + 
-                                        process.getProcessId() + " preempted (Remaining: " + process.getRemainingTime() + ")");
-                                    
-                                    // Add current process back to list and sort by remaining time
-                                    tempList.add(process);
-                                    tempList.sort(java.util.Comparator.comparingInt(Process::getRemainingTime));
-                                    psjtQueue.addAll(tempList);
-                                    
-                                    // Small delay to allow other cores to pick up shorter jobs
-                                    Thread.sleep(10);
-                                } else {
-                                    // No shorter job available, continue with current process
-                                    psjtQueue.addAll(tempList);
-                                    psjtQueue.offer(process); // Put back at end to continue next iteration
+                                // Check for newly arrived processes at current time
+                                java.util.List<Process> newlyArrived = new java.util.ArrayList<>();
+                                for (Process p : allProcesses) {
+                                    if (p.getArrivalTime() == currentTime.get() && !completed.contains(p)) {
+                                        newlyArrived.add(p);
+                                    }
                                 }
+                                
+                                // Add newly arrived processes to ready queue
+                                if (!newlyArrived.isEmpty()) {
+                                    sharedReadyQueue.addAll(newlyArrived);
+                                }
+                                
+                                // Check for preemption: see if any process in ready queue has shorter remaining time
+                                Process shortestInQueue = null;
+                                java.util.List<Process> tempQueue = new java.util.ArrayList<>();
+                                sharedReadyQueue.drainTo(tempQueue);
+                                
+                                if (!tempQueue.isEmpty()) {
+                                    // Find process with shortest remaining time in ready queue
+                                    shortestInQueue = tempQueue.stream()
+                                        .min(java.util.Comparator.comparingInt(Process::getRemainingTime))
+                                        .orElse(null);
+                                    
+                                    // Preempt if ready queue has a process with shorter remaining time
+                                    if (shortestInQueue != null && shortestInQueue.getRemainingTime() < currentProcess.getRemainingTime()) {
+                                        SynchronizedPrinter.printWithCategory("CORE-" + coreId, "Process " + 
+                                            currentProcess.getProcessId() + " preempted (Remaining: " + 
+                                            currentProcess.getRemainingTime() + ")");
+                                        
+                                        // Add current process back to queue
+                                        tempQueue.add(currentProcess);
+                                        currentProcess = null;
+                                    }
+                                }
+                                
+                                // Re-sort and add all processes back to queue
+                                tempQueue.sort(java.util.Comparator.comparingInt(Process::getRemainingTime));
+                                sharedReadyQueue.addAll(tempQueue);
                             }
                         }
                     } catch (InterruptedException e) {
@@ -132,10 +170,18 @@ public class PSJ extends Scheduler {
             }
         }
         
+        // Calculate average wait time
+        double totalWaitTime = 0;
+        for (Process p : completedList) {
+            totalWaitTime += p.getWaitTime();
+        }
+        double avgWaitTime = completedList.isEmpty() ? 0 : totalWaitTime / completedList.size();
+        
         SynchronizedPrinter.printSeparator();
         SynchronizedPrinter.printWithCategory("SCHEDULER", "Preemptive SJF Complete!");
         SynchronizedPrinter.printWithCategory("SCHEDULER", "Total processes: " + totalProcessCount);
         SynchronizedPrinter.printWithCategory("SCHEDULER", "Total burst time: " + totalBurstTime);
+        SynchronizedPrinter.printWithCategory("SCHEDULER", String.format("Average wait time: %.2f time units", avgWaitTime));
         SynchronizedPrinter.printSeparator();
     }
 

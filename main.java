@@ -88,21 +88,20 @@ public class main {
                         return;
                     }
                 } else if (args.length == 2){
+                    // No cores specified, use default of 1 core
+                    int defaultCores = 1;
                     switch (option2) {
                         case "1":
-                            FCFS.main(new String[]{"1"});
+                            FCFS fcfsScheduler = new FCFS(defaultCores, 1);
                             break;
                         case "2":
-                            System.out.println("Executing RR with default 1 core and default time quantum 1.\n");
-                            RR.main(new String[]{"1", "5"}); // cores, timeQuantum
+                            RR rrScheduler = new RR(defaultCores, 5); // default time quantum 5
                             break;
                         case "3":
-                            System.out.println("Executing NPSJ with default 1 core.\n");
-                            NPSJ.main(new String[]{"1"});
+                            NPSJ npsjScheduler = new NPSJ(defaultCores);
                             break;
                         case "4":
-                            System.out.println("Executing PSJ with default 1 core.\n");
-                            PSJ.main(new String[]{"1"});
+                            PSJ psjScheduler = new PSJ(defaultCores);
                             break;
                         default:
                             System.out.println("Unknown option2: " + option2);
@@ -135,7 +134,7 @@ public class main {
                     try {
                         option5 = args[4];
                         int timeQuantum = Integer.parseInt(option5);
-                        RR.main(new String[]{option2, String.valueOf(timeQuantum)});
+                        RR rrScheduler = new RR(num, timeQuantum);
                         return;
                     } catch (NumberFormatException e) {
                         System.out.println("Invalid time quantum: " + args[4]);
@@ -151,16 +150,16 @@ public class main {
                 if(option3.equals("-S") || option3.equals("-s")) {
                     switch (option4) {
                         case "1":
-                            FCFS.main(new String[]{option2});
+                            FCFS fcfsScheduler = new FCFS(num, 1);
                             break;
                         case "2":
-                            RR.main(new String[]{option2, "5"}); // cores, default timeQuantum=5
+                            RR rrScheduler = new RR(num, 5); // cores, default timeQuantum=5
                             break;
                         case "3":
-                            NPSJ.main(new String[]{option2});
+                            NPSJ npsjScheduler = new NPSJ(num);
                             break;
                         case "4":
-                            PSJ.main(new String[]{option2});
+                            PSJ psjScheduler = new PSJ(num);
                             break;
                         default:
                             System.out.println("Unknown option4: " + option4);
@@ -175,7 +174,10 @@ public class main {
             case "-ML":
             case "-Ml":
             case "-mL":
-                ML.main(new String[]{});
+                // Pass remaining arguments to ML
+                String[] mlArgs = new String[args.length - 1];
+                System.arraycopy(args, 1, mlArgs, 0, args.length - 1);
+                ML.main(mlArgs);
                 break;
             default:
                 System.out.println("Unknown option1: " + option1);
