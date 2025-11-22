@@ -15,6 +15,7 @@ import java.util.Random;
 public class ML {
     private static final String CSV_FILE = "scheduler_data.csv";
     private static final String ARFF_FILE = "scheduler_data.arff";
+    private List<Process> testProcesses; // Store test processes for reuse
     
     public static void main(String[] args) {
         ML ml = new ML();
@@ -139,7 +140,7 @@ public class ML {
         
         // Generate ONE set of test processes for fair comparison
         Random rand = new Random();
-        List<Process> testProcesses = new ArrayList<>();
+        testProcesses = new ArrayList<>(); // Store in instance variable
         for (int i = 0; i < numTasks; i++) {
             int burstTime = (int)(avgBurst + rand.nextGaussian() * (avgBurst * 0.3));
             burstTime = Math.max(1, Math.min(burstTime, maxBurst)); // Clamp to range
@@ -487,24 +488,31 @@ public class ML {
     public void runPredictedScheduler(String scheduler, int numCores, int timeQuantum) {
         System.out.println("\\n=== Running Predicted Scheduler ===");
         System.out.println("Launching " + scheduler + " scheduler...");
+        System.out.println();
+        
+        // Create deep copies of the test processes for the actual scheduler
+        List<Process> schedulerProcesses = new ArrayList<>();
+        for (Process p : testProcesses) {
+            schedulerProcesses.add(new Process(p.getProcessId(), p.getArrivalTime(), p.getBurstTime()));
+        }
         
         try {
             switch (scheduler) {
                 case "FCFS":
-                    FCFS fcfs = new FCFS(numCores, 1);
+                    FCFS fcfs = new FCFS(numCores, 1, schedulerProcesses);
                     break;
                 case "RR":
-                    RR rr = new RR(numCores, timeQuantum);
+                    RR rr = new RR(numCores, timeQuantum, schedulerProcesses);
                     break;
                 case "NPSJ":
-                    NPSJ npsj = new NPSJ(numCores);
+                    NPSJ npsj = new NPSJ(numCores, schedulerProcesses);
                     break;
                 case "PSJ":
-                    PSJ psj = new PSJ(numCores);
+                    PSJ psj = new PSJ(numCores, schedulerProcesses);
                     break;
                 default:
                     System.out.println("Unknown scheduler: " + scheduler + ", defaulting to FCFS");
-                    new FCFS(numCores, 1);
+                    new FCFS(numCores, 1, schedulerProcesses);
             }
         } catch (Exception e) {
             System.err.println("Error running scheduler: " + e.getMessage());

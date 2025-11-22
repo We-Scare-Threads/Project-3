@@ -3,7 +3,7 @@
 ## Compilation and Execution Commands
 - Here is the command to use to compile all files (Weka and java files):
 ```
-$ javac -cp "lib/weka.jar" -d . src/*.java
+$ javac -cp "./lib/weka.jar" *.java
 ```
 
 Alternative compilation (individual files):

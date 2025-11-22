@@ -15,6 +15,21 @@ public class NPSJ extends Scheduler {
         createProcesses();
         schedule();
     }
+    
+    public NPSJ(int cores, java.util.List<Process> processes) {
+        this.cores = cores;
+        this.processQueue = new LinkedList<>();
+        this.totalBurstTime = 0;
+        this.processList = new LinkedList<>();
+        
+        System.out.println("\nNumber of processes created: " + processes.size() + "\n");
+        for (Process p : processes) {
+            System.out.println("Process " + p.getProcessId() + ": Arrival=" + p.getArrivalTime() + ", Burst=" + p.getBurstTime());
+            addProcess(this.processList, p);
+        }
+        
+        schedule();
+    }
     public static void main(String[] args) {
         System.out.println("NPSJ Scheduling Algorithm Executed.");
         System.out.println("Number of cores: " + args[0]);

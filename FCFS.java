@@ -16,6 +16,21 @@ public class FCFS extends Scheduler {
         createProcesses();
         schedule();
     }
+    
+    public FCFS(int cores, int ID, java.util.List<Process> processes) {
+        this.cores = cores;
+        this.totalBurstTime = 0;
+        this.ID = ID;
+        this.processList = new LinkedList<>();
+        
+        System.out.println("\nNumber of processes created: " + processes.size() + "\n");
+        for (Process p : processes) {
+            System.out.println("Process " + p.getProcessId() + ": Arrival=" + p.getArrivalTime() + ", Burst=" + p.getBurstTime());
+            addProcess(this.processList, p);
+        }
+        
+        schedule();
+    }
 
     public static void main(String[] args) {
         System.out.println("FCFS Scheduling Algorithm Executed.");
